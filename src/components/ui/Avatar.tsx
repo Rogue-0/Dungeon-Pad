@@ -1,0 +1,68 @@
+import { Image } from 'expo-image';
+import React from 'react';
+import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
+
+import { colors, typography } from '@/theme/tokens';
+
+interface AvatarProps {
+  imageUri?: string | null;
+  name?: string;
+  size?: number;
+  style?: ViewStyle;
+}
+
+/** Circular avatar for heroes/NPCs in initiative tracker and session headers */
+export default function Avatar({
+  imageUri,
+  name,
+  size = 48,
+  style,
+}: AvatarProps) {
+  const borderRadius = size / 2;
+
+  if (imageUri) {
+    return (
+      <Image
+        source={{ uri: imageUri }}
+        style={[
+          styles.image,
+          { width: size, height: size, borderRadius },
+          style,
+        ]}
+      />
+    );
+  }
+
+  // Fallback: show first letter of name
+  const initial = name ? name[0].toUpperCase() : '?';
+
+  return (
+    <View
+      style={[
+        styles.fallback,
+        { width: size, height: size, borderRadius },
+        style,
+      ]}
+    >
+      <Text style={[styles.initial, { fontSize: size * 0.4 }]}>{initial}</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  image: {
+    borderWidth: 2,
+    borderColor: colors.foreground,
+  },
+  fallback: {
+    borderWidth: 2,
+    borderColor: colors.foreground,
+    backgroundColor: colors.surfaceSecondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  initial: {
+    ...typography.subtitleMedium,
+    color: colors.foreground,
+  },
+});

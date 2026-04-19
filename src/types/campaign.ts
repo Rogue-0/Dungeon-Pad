@@ -1,6 +1,7 @@
 export interface Campaign {
   id: string;
   name: string;
+  imageUri: string | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,8 @@ import {
   type TextInputProps,
 } from 'react-native';
 
-import { colors, radii, componentSizes, typography, spacing, shadows } from '@/theme/tokens';
+import { radii, componentSizes, typography, spacing, shadows } from '@/theme/tokens';
+import { useColors } from '@/theme/use-theme';
 
 interface InputFieldProps extends Omit<TextInputProps, 'style'> {
   label: string;
@@ -22,27 +23,55 @@ export default function InputField({
   containerStyle,
   ...textInputProps
 }: InputFieldProps) {
+  const colors = useColors();
   const [focused, setFocused] = useState(false);
   const [hovered, setHovered] = useState(false);
 
   const hasError = !!error;
 
-  // Border color logic
   const borderColor = hasError
     ? colors.error.stroke
     : focused || hovered
       ? colors.foreground
       : colors.muted;
 
-  // Background color for error state
   const backgroundColor = hasError ? colors.error.background : colors.surface;
 
-  // Shadow / inner shadow based on state
   const shadowStyle = hovered && !focused ? shadows.button : {};
   const innerShadowBorder =
     focused
       ? { borderBottomWidth: 0, borderTopWidth: 4, borderTopColor: 'rgba(0,0,0,0.25)' }
       : {};
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          gap: spacing.sm,
+        },
+        label: {
+          ...typography.subtitleSmall,
+          color: colors.text.primary,
+        },
+        inputWrapper: {
+          height: componentSizes.input.height,
+          borderRadius: radii.input,
+          borderWidth: componentSizes.strokeWidth,
+          justifyContent: 'center',
+          paddingHorizontal: spacing.md,
+        } as ViewStyle,
+        input: {
+          ...typography.bodyLarge,
+          color: colors.text.secondary,
+          flex: 1,
+        },
+        errorText: {
+          ...typography.bodySmall,
+          color: colors.error.stroke,
+        },
+      }),
+    [colors],
+  );
 
   return (
     <View style={[styles.container, containerStyle]}>
@@ -69,29 +98,3 @@ export default function InputField({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    gap: spacing.sm,
-  },
-  label: {
-    ...typography.subtitleSmall,
-    color: colors.foreground,
-  },
-  inputWrapper: {
-    height: componentSizes.input.height,
-    borderRadius: radii.input,
-    borderWidth: componentSizes.strokeWidth,
-    justifyContent: 'center',
-    paddingHorizontal: spacing.md,
-  } as ViewStyle,
-  input: {
-    ...typography.bodyLarge,
-    color: colors.foreground,
-    flex: 1,
-  },
-  errorText: {
-    ...typography.bodySmall,
-    color: colors.error.stroke,
-  },
-});

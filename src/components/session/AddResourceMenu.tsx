@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,8 @@ import {
 } from 'react-native';
 
 import { Card } from '@/components/ui';
-import { colors, typography, spacing, radii, componentSizes } from '@/theme/tokens';
+import { typography, spacing, radii, componentSizes } from '@/theme/tokens';
+import { useColors } from '@/theme/use-theme';
 
 interface AddResourceMenuProps {
   resourceType: string;
@@ -25,12 +26,83 @@ export default function AddResourceMenu({
   onAddFromCompendium,
   style,
 }: AddResourceMenuProps) {
+  const colors = useColors();
   const [menuVisible, setMenuVisible] = useState(false);
 
   const handleOption = (callback: () => void) => {
     setMenuVisible(false);
     callback();
   };
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        addCard: {
+          justifyContent: 'center',
+          alignItems: 'center',
+        },
+        addIcon: {
+          fontSize: 32,
+          color: colors.muted,
+          marginBottom: spacing.xs,
+        },
+        addText: {
+          ...typography.bodySmall,
+          color: colors.muted,
+          textAlign: 'center',
+        },
+        overlay: {
+          flex: 1,
+          backgroundColor: colors.overlay,
+          justifyContent: 'center',
+          alignItems: 'center',
+        },
+        menu: {
+          width: 340,
+          backgroundColor: colors.surface,
+          borderRadius: radii.card,
+          borderWidth: componentSizes.strokeWidth,
+          borderColor: colors.foreground,
+          padding: spacing.lg,
+        },
+        menuTitle: {
+          ...typography.subtitleMedium,
+          color: colors.text.primary,
+          marginBottom: spacing.md,
+        },
+        menuItem: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: spacing.md,
+          paddingVertical: spacing.md,
+          paddingHorizontal: spacing.sm,
+          borderRadius: radii.input,
+        },
+        menuItemIcon: {
+          fontSize: 24,
+          width: 32,
+          textAlign: 'center',
+          color: colors.text.primary,
+        },
+        menuItemText: {
+          flex: 1,
+        },
+        menuItemLabel: {
+          ...typography.subtitleSmall,
+          color: colors.text.primary,
+        },
+        menuItemDesc: {
+          ...typography.bodySmall,
+          color: colors.muted,
+          marginTop: 2,
+        },
+        menuDivider: {
+          height: 1,
+          backgroundColor: colors.border,
+        },
+      }),
+    [colors],
+  );
 
   return (
     <View style={style}>
@@ -90,68 +162,3 @@ export default function AddResourceMenu({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  addCard: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  addIcon: {
-    fontSize: 32,
-    color: colors.muted,
-    marginBottom: spacing.xs,
-  },
-  addText: {
-    ...typography.bodySmall,
-    color: colors.muted,
-    textAlign: 'center',
-  },
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  menu: {
-    width: 340,
-    backgroundColor: colors.surface,
-    borderRadius: radii.card,
-    borderWidth: componentSizes.strokeWidth,
-    borderColor: colors.foreground,
-    padding: spacing.lg,
-  },
-  menuTitle: {
-    ...typography.subtitleMedium,
-    color: colors.foreground,
-    marginBottom: spacing.md,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.sm,
-    borderRadius: radii.input,
-  },
-  menuItemIcon: {
-    fontSize: 24,
-    width: 32,
-    textAlign: 'center',
-  },
-  menuItemText: {
-    flex: 1,
-  },
-  menuItemLabel: {
-    ...typography.subtitleSmall,
-    color: colors.foreground,
-  },
-  menuItemDesc: {
-    ...typography.bodySmall,
-    color: colors.muted,
-    marginTop: 2,
-  },
-  menuDivider: {
-    height: 1,
-    backgroundColor: colors.border,
-  },
-});

@@ -2,6 +2,8 @@ export interface CombatModule {
   id: string;
   campaignId: string;
   title: string;
+  description: string | null;
+  imageUri: string | null;
   createdAt: string;
   updatedAt: string;
 }

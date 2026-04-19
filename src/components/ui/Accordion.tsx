@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Pressable,
   View,
@@ -10,9 +10,9 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { colors, radii, componentSizes, typography, spacing, shadows } from '@/theme/tokens';
+import { radii, componentSizes, typography, spacing, shadows } from '@/theme/tokens';
+import { useColors } from '@/theme/use-theme';
 
-// Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
@@ -30,6 +30,7 @@ export default function Accordion({
   defaultExpanded = false,
   style,
 }: AccordionProps) {
+  const colors = useColors();
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [pressed, setPressed] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -45,6 +46,38 @@ export default function Accordion({
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setExpanded((prev) => !prev);
   };
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          borderRadius: radii.accordion,
+          borderWidth: componentSizes.strokeWidth,
+          backgroundColor: colors.surface,
+          overflow: 'hidden',
+        } as ViewStyle,
+        header: {
+          height: componentSizes.accordion.collapsedHeight,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingHorizontal: spacing.md,
+        },
+        headerText: {
+          ...typography.subtitleMedium,
+          color: colors.text.primary,
+        },
+        chevron: {
+          ...typography.bodyMedium,
+          color: colors.foreground,
+        },
+        body: {
+          paddingHorizontal: spacing.md,
+          paddingBottom: spacing.md,
+        },
+      }),
+    [colors],
+  );
 
   return (
     <View style={[styles.container, { borderColor }, shadowStyle, innerShadowBorder, style]}>
@@ -64,31 +97,3 @@ export default function Accordion({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    borderRadius: radii.accordion,
-    borderWidth: componentSizes.strokeWidth,
-    backgroundColor: colors.surface,
-    overflow: 'hidden',
-  } as ViewStyle,
-  header: {
-    height: componentSizes.accordion.collapsedHeight,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.md,
-  },
-  headerText: {
-    ...typography.subtitleMedium,
-    color: colors.foreground,
-  },
-  chevron: {
-    ...typography.bodyMedium,
-    color: colors.foreground,
-  },
-  body: {
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.md,
-  },
-});

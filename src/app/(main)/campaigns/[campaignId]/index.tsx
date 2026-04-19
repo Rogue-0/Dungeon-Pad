@@ -1,12 +1,15 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ScrollView, View, Text, StyleSheet } from 'react-native';
 
 import HorizontalCardRow from '@/components/campaign/HorizontalCardRow';
 import MiniCard from '@/components/campaign/MiniCard';
 import SessionsPlayedCounter from '@/components/campaign/SessionsPlayedCounter';
-import { Avatar } from '@/components/ui';
-import { colors, typography, spacing, radii, componentSizes } from '@/theme/tokens';
+import BackButton from '@/components/navigation/BackButton';
+import { Button } from '@/components/ui';
+import { typography, spacing, radii, componentSizes } from '@/theme/tokens';
+import { useColors } from '@/theme/use-theme';
+import { formatRelativeDate } from '@/utils/format-relative-date';
 import {
   MOCK_CAMPAIGNS,
   MOCK_SESSIONS,
@@ -19,6 +22,7 @@ import {
 export default function CampaignOverviewScreen() {
   const { campaignId } = useLocalSearchParams<{ campaignId: string }>();
   const router = useRouter();
+  const colors = useColors();
 
   const campaign = MOCK_CAMPAIGNS.find((c) => c.id === campaignId);
   const sessions = MOCK_SESSIONS.filter((s) => s.campaignId === campaignId);
@@ -26,6 +30,70 @@ export default function CampaignOverviewScreen() {
   const combatModules = MOCK_COMBAT_MODULES.filter((c) => c.campaignId === campaignId);
   const npcs = MOCK_NPCS.filter((n) => n.campaignId === campaignId);
   const maps = MOCK_MAPS.filter((m) => m.campaignId === campaignId);
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+          backgroundColor: 'transparent',
+        },
+        content: {
+          padding: spacing['3xl'],
+        },
+        campaignName: {
+          ...typography.titleMedium,
+          color: colors.text.primary,
+        },
+        headerRow: {
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: spacing.xl,
+          gap: spacing.md,
+        },
+        headerActions: {
+          flexDirection: 'row',
+          gap: spacing.sm,
+          alignItems: 'center',
+        },
+        dashboardLabel: {
+          ...typography.bodyMedium,
+          color: colors.text.tertiary,
+          marginBottom: spacing.xs,
+        },
+        topRow: {
+          flexDirection: 'row',
+          gap: spacing.md,
+          marginBottom: spacing.xl,
+          alignItems: 'stretch',
+        },
+        heroesContainer: {
+          flex: 1,
+          borderRadius: radii.card,
+          borderWidth: componentSizes.strokeWidth,
+          borderColor: colors.foreground,
+          backgroundColor: colors.surface,
+          padding: spacing.md,
+        },
+        sectionLabel: {
+          ...typography.subtitleSmall,
+          color: colors.text.primary,
+          marginBottom: spacing.sm,
+        },
+        heroWrap: {
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          gap: spacing.md,
+        },
+        title: {
+          ...typography.titleSmall,
+          color: colors.text.primary,
+          padding: spacing['3xl'],
+        },
+      }),
+    [colors],
+  );
 
   if (!campaign) {
     return (
@@ -35,138 +103,143 @@ export default function CampaignOverviewScreen() {
     );
   }
 
-  return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Header */}
-      <Text style={styles.campaignName}>{campaign.name}</Text>
-      <Text style={styles.dashboardLabel}>Campaign Dashboard</Text>
+  const latestPlayedAt = sessions
+    .map((s) => s.playedAt)
+    .filter((d): d is string => Boolean(d))
+    .sort()
+    .reverse()[0] ?? null;
 
-      {/* Top row: Heroes portraits + Sessions Played */}
-      <View style={styles.topRow}>
-        <View style={styles.heroesCard}>
-          <Text style={styles.sectionLabel}>Heroes</Text>
-          <View style={styles.heroPortraits}>
-            {heroes.map((hero) => (
-              <Avatar key={hero.id} name={hero.name} imageUri={hero.imageUri} size={64} />
-            ))}
+  return (
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <BackButton label="Campaigns" />
+
+        <View style={styles.headerRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.dashboardLabel}>Campaign Dashboard</Text>
+            <Text style={styles.campaignName}>{campaign.name}</Text>
+          </View>
+          <View style={styles.headerActions}>
+            <Button
+              label="Campaign Compendium"
+              variant="secondary"
+              onPress={() =>
+                router.push(`/(main)/campaigns/${campaignId}/compendium`)
+              }
+            />
           </View>
         </View>
-        <SessionsPlayedCounter count={campaign.sessionCount} />
-      </View>
 
-      {/* Recent Sessions */}
-      <HorizontalCardRow title="Recent Sessions">
-        {sessions.map((session) => (
-          <MiniCard
-            key={session.id}
-            title={`Session ${session.sessionNumber}`}
-            onPress={() =>
-              router.push(`/(main)/campaigns/${campaignId}/sessions/${session.id}`)
-            }
+        <View style={styles.topRow}>
+          <View style={styles.heroesContainer}>
+            <Text style={styles.sectionLabel}>Heroes</Text>
+            <View style={styles.heroWrap}>
+              {heroes.map((hero, i) => (
+                <MiniCard
+                  key={hero.id}
+                  title={hero.name}
+                  description={hero.class}
+                  imageUri={hero.imageUri}
+                  gradientIndex={i + 3}
+                  placeholderType="hero"
+                  onPress={() =>
+                    router.push(`/(main)/campaigns/${campaignId}/heroes/${hero.id}`)
+                  }
+                />
+              ))}
+              <MiniCard title="Add Hero" isAddCard onPress={() => {}} />
+            </View>
+          </View>
+          <SessionsPlayedCounter
+            count={campaign.sessionCount}
+            lastPlayedLabel={latestPlayedAt ? formatRelativeDate(latestPlayedAt) : undefined}
           />
-        ))}
-      </HorizontalCardRow>
+        </View>
 
-      {/* Heroes */}
-      <HorizontalCardRow title="Heroes">
-        {heroes.map((hero) => (
-          <MiniCard
-            key={hero.id}
-            title={hero.name}
-            onPress={() =>
-              router.push(`/(main)/campaigns/${campaignId}/heroes/${hero.id}`)
-            }
-          />
-        ))}
-      </HorizontalCardRow>
+        <HorizontalCardRow
+          title="Recent Sessions"
+          isEmpty={sessions.length === 0}
+          emptyLabel="No sessions yet — add your first"
+        >
+          {sessions.map((session, i) => (
+            <MiniCard
+              key={session.id}
+              title={`Session ${session.sessionNumber}`}
+              description={session.description}
+              imageUri={session.imageUri}
+              gradientIndex={i}
+              placeholderType="session"
+              sessionNumber={session.sessionNumber}
+              onPress={() =>
+                router.push(`/(main)/campaigns/${campaignId}/sessions/${session.id}`)
+              }
+            />
+          ))}
+          <MiniCard title="Add Session" isAddCard onPress={() => {}} />
+        </HorizontalCardRow>
 
-      {/* Combat Modules */}
-      <HorizontalCardRow title="Combat Modules">
-        {combatModules.map((combat) => (
-          <MiniCard
-            key={combat.id}
-            title={combat.title}
-            onPress={() =>
-              router.push(`/(main)/campaigns/${campaignId}/combat/${combat.id}`)
-            }
-          />
-        ))}
-      </HorizontalCardRow>
+        <HorizontalCardRow
+          title="Combat Modules"
+          isEmpty={combatModules.length === 0}
+          emptyLabel="No combat modules yet — add your first"
+        >
+          {combatModules.map((combat, i) => (
+            <MiniCard
+              key={combat.id}
+              title={combat.title}
+              description={combat.description}
+              imageUri={combat.imageUri}
+              gradientIndex={i + 2}
+              placeholderType="combat"
+              onPress={() =>
+                router.push(`/(main)/campaigns/${campaignId}/combat/${combat.id}`)
+              }
+            />
+          ))}
+          <MiniCard title="Add Combat Module" isAddCard onPress={() => {}} />
+        </HorizontalCardRow>
 
-      {/* NPC Profiles */}
-      <HorizontalCardRow title="NPC Profiles">
-        {npcs.map((npc) => (
-          <MiniCard
-            key={npc.id}
-            title={npc.name}
-            onPress={() =>
-              router.push(`/(main)/campaigns/${campaignId}/npcs/${npc.id}`)
-            }
-          />
-        ))}
-      </HorizontalCardRow>
+        <HorizontalCardRow
+          title="NPC Profiles"
+          isEmpty={npcs.length === 0}
+          emptyLabel="No NPCs yet — add your first"
+        >
+          {npcs.map((npc, i) => (
+            <MiniCard
+              key={npc.id}
+              title={npc.name}
+              description={npc.description}
+              imageUri={npc.imageUri}
+              gradientIndex={i + 4}
+              placeholderType="npc"
+              onPress={() =>
+                router.push(`/(main)/campaigns/${campaignId}/npcs/${npc.id}`)
+              }
+            />
+          ))}
+          <MiniCard title="Add NPC" isAddCard onPress={() => {}} />
+        </HorizontalCardRow>
 
-      {/* Maps */}
-      <HorizontalCardRow title="Maps">
-        {maps.map((map) => (
-          <MiniCard
-            key={map.id}
-            title={map.name}
-            onPress={() =>
-              router.push(`/(main)/campaigns/${campaignId}/maps/${map.id}`)
-            }
-          />
-        ))}
-        <MiniCard title="Add a Map" isAddCard onPress={() => {}} />
-      </HorizontalCardRow>
-    </ScrollView>
+        <HorizontalCardRow
+          title="Maps"
+          isEmpty={maps.length === 0}
+          emptyLabel="No maps yet — add your first"
+        >
+          {maps.map((map, i) => (
+            <MiniCard
+              key={map.id}
+              title={map.name}
+              imageUri={map.imageUri}
+              gradientIndex={i + 1}
+              placeholderType="map"
+              onPress={() =>
+                router.push(`/(main)/campaigns/${campaignId}/maps/${map.id}`)
+              }
+            />
+          ))}
+          <MiniCard title="Add Map" isAddCard onPress={() => {}} />
+        </HorizontalCardRow>
+      </ScrollView>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  content: {
-    padding: spacing['3xl'],
-  },
-  campaignName: {
-    ...typography.titleSmall,
-    color: colors.foreground,
-    fontStyle: 'italic',
-  },
-  dashboardLabel: {
-    ...typography.subtitleLarge,
-    color: colors.foreground,
-    marginTop: spacing.xs,
-    marginBottom: spacing.xl,
-  },
-  topRow: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    marginBottom: spacing.xl,
-  },
-  heroesCard: {
-    flex: 1,
-    borderRadius: radii.card,
-    borderWidth: componentSizes.strokeWidth,
-    borderColor: colors.foreground,
-    backgroundColor: colors.surface,
-    padding: spacing.md,
-  },
-  heroPortraits: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.sm,
-  },
-  sectionLabel: {
-    ...typography.subtitleSmall,
-    color: colors.foreground,
-  },
-  title: {
-    ...typography.titleSmall,
-    color: colors.foreground,
-    padding: spacing['3xl'],
-  },
-});

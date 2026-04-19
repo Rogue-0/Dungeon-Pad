@@ -1,15 +1,26 @@
 import { Stack } from 'expo-router';
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
 
-import { colors } from '@/theme/tokens';
+import AppBackground from '@/components/ui/AppBackground';
 
 /** Main app stack — all authenticated screens live here */
 export default function MainLayout() {
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: { backgroundColor: colors.background },
-      }}
-    />
+    <View style={styles.root}>
+      <AppBackground />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: 'transparent' },
+        }}
+      />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
+});

@@ -1,14 +1,43 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Text, StyleSheet } from 'react-native';
 
 import { Card } from '@/components/ui';
-import { colors, typography, spacing } from '@/theme/tokens';
+import { typography, spacing } from '@/theme/tokens';
+import { useColors } from '@/theme/use-theme';
 
 interface NewCampaignCardProps {
   onPress?: () => void;
 }
 
 export default function NewCampaignCard({ onPress }: NewCampaignCardProps) {
+  const colors = useColors();
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        card: {
+          width: '100%',
+          height: 'auto',
+          padding: 0,
+          paddingTop: spacing.xl,
+          paddingBottom: spacing['2xl'],
+          paddingHorizontal: spacing.xl,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: colors.surfaceSecondary,
+        },
+        text: {
+          ...typography.bodyLarge,
+          color: colors.text.tertiary,
+          marginBottom: spacing.sm,
+        },
+        icon: {
+          fontSize: 56,
+          color: colors.muted,
+        },
+      }),
+    [colors],
+  );
+
   return (
     <Card
       width={undefined}
@@ -21,22 +50,3 @@ export default function NewCampaignCard({ onPress }: NewCampaignCardProps) {
     </Card>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    width: '100%',
-    height: undefined,
-    paddingVertical: spacing['2xl'],
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  text: {
-    ...typography.bodyLarge,
-    color: colors.foreground,
-    marginBottom: spacing.sm,
-  },
-  icon: {
-    fontSize: 48,
-    color: colors.foreground,
-  },
-});

@@ -1,10 +1,11 @@
 import { useLocalSearchParams } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 
 import BackButton from '@/components/navigation/BackButton';
 import { Avatar, Badge, Button, PaginationDots } from '@/components/ui';
-import { colors, typography, spacing, radii, componentSizes } from '@/theme/tokens';
+import { typography, spacing, radii, componentSizes } from '@/theme/tokens';
+import { useColors } from '@/theme/use-theme';
 import {
   MOCK_COMBAT_MODULES,
   MOCK_COMBAT_MONSTERS,
@@ -16,6 +17,7 @@ export default function CombatModuleScreen() {
     campaignId: string;
     combatId: string;
   }>();
+  const colors = useColors();
 
   const campaignCombat = MOCK_COMBAT_MODULES.filter((c) => c.campaignId === campaignId);
   const initialIndex = campaignCombat.findIndex((c) => c.id === combatId);
@@ -25,12 +27,112 @@ export default function CombatModuleScreen() {
   const monsters = MOCK_COMBAT_MONSTERS.filter((m) => m.combatModuleId === combat?.id);
   const heroes = MOCK_HEROES.filter((h) => h.campaignId === campaignId);
 
-  // Initiative order: heroes + monsters interleaved
   const initiativeOrder = [
     ...heroes.map((h) => ({ id: h.id, name: h.name, type: 'hero' as const })),
     ...monsters.map((m) => ({ id: m.id, name: m.name, type: 'monster' as const })),
   ];
   const [activeInitiative, setActiveInitiative] = useState(0);
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+          backgroundColor: 'transparent',
+          padding: spacing['3xl'],
+        },
+        titleBar: {
+          borderRadius: radii.card,
+          borderWidth: componentSizes.strokeWidth,
+          borderColor: colors.foreground,
+          backgroundColor: colors.surface,
+          paddingVertical: spacing.md,
+          paddingHorizontal: spacing.lg,
+          alignItems: 'center',
+          marginBottom: spacing.md,
+        },
+        title: {
+          ...typography.subtitleLarge,
+          color: colors.text.primary,
+        },
+        initiativeCard: {
+          borderRadius: radii.card,
+          borderWidth: componentSizes.strokeWidth,
+          borderColor: colors.foreground,
+          backgroundColor: colors.surface,
+          padding: spacing.md,
+          marginBottom: spacing.md,
+        },
+        sectionLabel: {
+          ...typography.subtitleSmall,
+          color: colors.text.primary,
+          marginBottom: spacing.md,
+        },
+        initiativeRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: spacing.md,
+        },
+        avatarScroll: {
+          gap: spacing.sm,
+          flex: 1,
+        },
+        initiativeAvatar: {
+          opacity: 0.5,
+        },
+        activeAvatar: {
+          opacity: 1,
+          borderWidth: 3,
+          borderColor: colors.primary.default,
+        },
+        initiativeButtons: {
+          flexDirection: 'row',
+          gap: spacing.sm,
+        },
+        monsterCard: {
+          flex: 1,
+          borderRadius: radii.card,
+          borderWidth: componentSizes.strokeWidth,
+          borderColor: colors.foreground,
+          backgroundColor: colors.surface,
+          padding: spacing.lg,
+        },
+        monsterName: {
+          ...typography.subtitleLarge,
+          color: colors.text.primary,
+          marginBottom: spacing.md,
+        },
+        statsRow: {
+          flexDirection: 'row',
+          gap: spacing.md,
+          flex: 1,
+        },
+        statBlock: {
+          flex: 1,
+          borderRadius: radii.card,
+          borderWidth: componentSizes.strokeWidth,
+          borderColor: colors.foreground,
+          padding: spacing.md,
+        },
+        statBlockLabel: {
+          ...typography.subtitleSmall,
+          color: colors.muted,
+          marginBottom: spacing.sm,
+        },
+        statBlockScroll: {
+          flex: 1,
+        },
+        statBlockText: {
+          ...typography.bodyMedium,
+          color: colors.text.secondary,
+          lineHeight: 22,
+        },
+        pagination: {
+          paddingTop: spacing.lg,
+        },
+      }),
+    [colors],
+  );
 
   if (!combat) {
     return (
@@ -54,12 +156,10 @@ export default function CombatModuleScreen() {
     <View style={styles.container}>
       <BackButton label="Dashboard" />
 
-      {/* Title */}
       <View style={styles.titleBar}>
         <Text style={styles.title}>{combat.title}</Text>
       </View>
 
-      {/* Initiative Tracker */}
       <View style={styles.initiativeCard}>
         <Text style={styles.sectionLabel}>Initiative Order</Text>
         <View style={styles.initiativeRow}>
@@ -87,7 +187,6 @@ export default function CombatModuleScreen() {
         </View>
       </View>
 
-      {/* Monster Stat Card */}
       {monsters.map((monster) => (
         <View key={monster.id} style={styles.monsterCard}>
           <Text style={styles.monsterName}>{monster.name}</Text>
@@ -96,7 +195,6 @@ export default function CombatModuleScreen() {
             <Badge label="AC" value={monster.ac ?? '—'} />
             <Badge label="Speed" value={monster.speed ?? '—'} />
 
-            {/* Stat Block */}
             <View style={styles.statBlock}>
               <Text style={styles.statBlockLabel}>Monster Stat Block</Text>
               <ScrollView style={styles.statBlockScroll}>
@@ -109,7 +207,6 @@ export default function CombatModuleScreen() {
         </View>
       ))}
 
-      {/* Pagination */}
       <PaginationDots
         total={campaignCombat.length}
         activeIndex={activeIndex}
@@ -118,100 +215,3 @@ export default function CombatModuleScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-    padding: spacing['3xl'],
-  },
-  titleBar: {
-    borderRadius: radii.card,
-    borderWidth: componentSizes.strokeWidth,
-    borderColor: colors.foreground,
-    backgroundColor: colors.surface,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  title: {
-    ...typography.subtitleLarge,
-    color: colors.foreground,
-  },
-  initiativeCard: {
-    borderRadius: radii.card,
-    borderWidth: componentSizes.strokeWidth,
-    borderColor: colors.foreground,
-    backgroundColor: colors.surface,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-  },
-  sectionLabel: {
-    ...typography.subtitleSmall,
-    color: colors.foreground,
-    marginBottom: spacing.md,
-  },
-  initiativeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  avatarScroll: {
-    gap: spacing.sm,
-    flex: 1,
-  },
-  initiativeAvatar: {
-    opacity: 0.5,
-  },
-  activeAvatar: {
-    opacity: 1,
-    borderWidth: 3,
-    borderColor: colors.primary.default,
-  },
-  initiativeButtons: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  monsterCard: {
-    flex: 1,
-    borderRadius: radii.card,
-    borderWidth: componentSizes.strokeWidth,
-    borderColor: colors.foreground,
-    backgroundColor: colors.surface,
-    padding: spacing.lg,
-  },
-  monsterName: {
-    ...typography.subtitleLarge,
-    color: colors.foreground,
-    marginBottom: spacing.md,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    flex: 1,
-  },
-  statBlock: {
-    flex: 1,
-    borderRadius: radii.card,
-    borderWidth: componentSizes.strokeWidth,
-    borderColor: colors.foreground,
-    padding: spacing.md,
-  },
-  statBlockLabel: {
-    ...typography.subtitleSmall,
-    color: colors.muted,
-    marginBottom: spacing.sm,
-  },
-  statBlockScroll: {
-    flex: 1,
-  },
-  statBlockText: {
-    ...typography.bodyMedium,
-    color: colors.foreground,
-    lineHeight: 22,
-  },
-  pagination: {
-    paddingTop: spacing.lg,
-  },
-});

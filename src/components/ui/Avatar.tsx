@@ -1,8 +1,9 @@
 import { Image } from 'expo-image';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
 
-import { colors, typography } from '@/theme/tokens';
+import { typography } from '@/theme/tokens';
+import { useColors } from '@/theme/use-theme';
 
 interface AvatarProps {
   imageUri?: string | null;
@@ -18,7 +19,30 @@ export default function Avatar({
   size = 48,
   style,
 }: AvatarProps) {
+  const colors = useColors();
   const borderRadius = size / 2;
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        image: {
+          borderWidth: 2,
+          borderColor: colors.foreground,
+        },
+        fallback: {
+          borderWidth: 2,
+          borderColor: colors.foreground,
+          backgroundColor: colors.surfaceSecondary,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        initial: {
+          ...typography.subtitleMedium,
+          color: colors.text.primary,
+        },
+      }),
+    [colors],
+  );
 
   if (imageUri) {
     return (
@@ -33,7 +57,6 @@ export default function Avatar({
     );
   }
 
-  // Fallback: show first letter of name
   const initial = name ? name[0].toUpperCase() : '?';
 
   return (
@@ -48,21 +71,3 @@ export default function Avatar({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  image: {
-    borderWidth: 2,
-    borderColor: colors.foreground,
-  },
-  fallback: {
-    borderWidth: 2,
-    borderColor: colors.foreground,
-    backgroundColor: colors.surfaceSecondary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  initial: {
-    ...typography.subtitleMedium,
-    color: colors.foreground,
-  },
-});

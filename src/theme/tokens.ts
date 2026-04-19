@@ -2,49 +2,25 @@
  * Dungeon Pad Design Tokens
  * Single source of truth for all visual styles — derived from Figma specs.
  * Components should import from here, never hardcode values.
+ *
+ * Colors are theme-aware: import the static `colors` object for the default
+ * (light) palette, or use the `useColors()` hook for reactive theme switching.
  */
 
 // ─── Colors ──────────────────────────────────────────────────────────────────
 
-export const colors = {
-  // Backgrounds
-  background: '#FAF9F7',
-  surface: '#FFFFFF',
-  surfaceHover: '#F5F3F0',
-  surfaceSecondary: '#EFEDE9',
+export { lightColors, darkColors, paletteForMode } from './palettes';
+export type { AppColors, ThemeMode } from './palettes';
 
-  // Borders & Strokes
-  border: '#E5E2DD',
-  muted: '#848484',
-  foreground: '#000000',
+import { lightColors } from './palettes';
 
-  // Primary (green)
-  primary: {
-    default: '#77C883',
-    hover: '#4FA65C',
-    pressed: '#42964F',
-  },
-
-  // Secondary (dark green — used for secondary buttons)
-  secondary: {
-    default: '#4FA65C',
-    hover: '#42964F',
-    pressed: '#386E3F',
-  },
-
-  // Destructive (red)
-  destructive: {
-    default: '#E25151',
-    hover: '#D44949',
-    pressed: '#C93D3D',
-  },
-
-  // Error
-  error: {
-    stroke: '#C72A2A',
-    background: '#FFEEEE',
-  },
-} as const;
+/**
+ * Default static colors (light palette).
+ * Kept as a module-level export for backward compatibility with components
+ * that use `StyleSheet.create` at module load. For live theme switching,
+ * migrate to `useColors()` from `@/theme/use-theme` with `useMemo`-wrapped styles.
+ */
+export const colors = lightColors;
 
 // ─── Spacing (8px base grid) ─────────────────────────────────────────────────
 

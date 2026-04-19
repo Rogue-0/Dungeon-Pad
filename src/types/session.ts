@@ -2,6 +2,8 @@ export interface Session {
   id: string;
   campaignId: string;
   title: string;
+  description: string | null;
+  imageUri: string | null;
   sessionNumber: number | null;
   playedAt: string | null;
   createdAt: string;

@@ -1,18 +1,54 @@
 import { useRouter } from 'expo-router';
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { ScrollView, View, Text, StyleSheet } from 'react-native';
 
 import CampaignCard from '@/components/campaign/CampaignCard';
 import NewCampaignCard from '@/components/campaign/NewCampaignCard';
+import NewCampaignDialog from '@/components/campaign/NewCampaignDialog';
 import { Button } from '@/components/ui';
+import { getDatabase } from '@/db/database';
+import { campaignsRepo } from '@/db/repos';
+import { useCampaigns } from '@/hooks/data';
 import { typography, spacing } from '@/theme/tokens';
 import { useColors } from '@/theme/use-theme';
-import { MOCK_CAMPAIGNS } from '@/utils/mock-data';
 
-/** Home screen — list of campaigns */
 export default function CampaignsScreen() {
   const router = useRouter();
   const colors = useColors();
+  const { data: campaigns, loading, refetch } = useCampaigns();
+  const [newOpen, setNewOpen] = useState(false);
+
+  const handleDelete = useCallback(
+    async (id: string) => {
+      const db = await getDatabase();
+      await campaignsRepo.remove(db, id);
+      await refetch();
+    },
+    [refetch],
+  );
+
+  const handleImageChange = useCallback(
+    async (id: string, uri: string) => {
+      const db = await getDatabase();
+      await campaignsRepo.update(db, id, { imageUri: uri });
+      await refetch();
+    },
+    [refetch],
+  );
+
+  const handleCreate = useCallback(
+    async (name: string, description: string) => {
+      const db = await getDatabase();
+      const created = await campaignsRepo.create(db, {
+        name,
+        description: description || null,
+      });
+      setNewOpen(false);
+      await refetch();
+      router.push(`/(main)/campaigns/${created.id}`);
+    },
+    [refetch, router],
+  );
 
   const styles = useMemo(
     () =>
@@ -42,6 +78,12 @@ export default function CampaignsScreen() {
           ...typography.titleMedium,
           color: colors.text.primary,
         },
+        emptyMessage: {
+          ...typography.bodyMedium,
+          color: colors.text.tertiary,
+          textAlign: 'center',
+          marginBottom: spacing.lg,
+        },
       }),
     [colors],
   );
@@ -65,12 +107,29 @@ export default function CampaignsScreen() {
           </View>
         </View>
 
-        {MOCK_CAMPAIGNS.map((campaign) => (
-          <CampaignCard key={campaign.id} campaign={campaign} />
+        {!loading && campaigns && campaigns.length === 0 ? (
+          <Text style={styles.emptyMessage}>
+            No campaigns yet. Start your first one below.
+          </Text>
+        ) : null}
+
+        {campaigns?.map((campaign) => (
+          <CampaignCard
+            key={campaign.id}
+            campaign={campaign}
+            onDelete={handleDelete}
+            onImageChange={handleImageChange}
+          />
         ))}
 
-        <NewCampaignCard onPress={() => {}} />
+        <NewCampaignCard onPress={() => setNewOpen(true)} />
       </ScrollView>
+
+      <NewCampaignDialog
+        visible={newOpen}
+        onClose={() => setNewOpen(false)}
+        onSubmit={handleCreate}
+      />
     </View>
   );
 }

@@ -11,6 +11,7 @@ import {
   Modal,
   Alert,
   Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 
 import BackButton from '@/components/navigation/BackButton';
@@ -518,31 +519,36 @@ export default function HeroProfileScreen() {
         animationType="fade"
         onRequestClose={() => setEditField(null)}
       >
-        <Pressable style={styles.overlay} onPress={() => setEditField(null)}>
-          <Pressable style={styles.dialog} onPress={(e) => e.stopPropagation()}>
-            <Text style={styles.dialogTitle}>Edit {editLabel}</Text>
-            <TextInput
-              style={[styles.dialogInput, isMultiline && styles.dialogInputMultiline]}
-              value={editValue}
-              onChangeText={setEditValue}
-              multiline={isMultiline}
-              autoFocus
-              placeholder={`Enter ${editLabel.toLowerCase()}`}
-              placeholderTextColor={colors.muted}
-            />
-            <View style={styles.dialogActions}>
-              <Pressable style={styles.dialogButton} onPress={() => setEditField(null)}>
-                <Text style={styles.dialogButtonTextCancel}>Cancel</Text>
-              </Pressable>
-              <Pressable
-                style={[styles.dialogButton, styles.dialogButtonSave]}
-                onPress={saveEdit}
-              >
-                <Text style={styles.dialogButtonTextSave}>Save</Text>
-              </Pressable>
-            </View>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          <Pressable style={styles.overlay} onPress={() => setEditField(null)}>
+            <Pressable style={styles.dialog} onPress={(e) => e.stopPropagation()}>
+              <Text style={styles.dialogTitle}>Edit {editLabel}</Text>
+              <TextInput
+                style={[styles.dialogInput, isMultiline && styles.dialogInputMultiline]}
+                value={editValue}
+                onChangeText={setEditValue}
+                multiline={isMultiline}
+                autoFocus
+                placeholder={`Enter ${editLabel.toLowerCase()}`}
+                placeholderTextColor={colors.muted}
+              />
+              <View style={styles.dialogActions}>
+                <Pressable style={styles.dialogButton} onPress={() => setEditField(null)}>
+                  <Text style={styles.dialogButtonTextCancel}>Cancel</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.dialogButton, styles.dialogButtonSave]}
+                  onPress={saveEdit}
+                >
+                  <Text style={styles.dialogButtonTextSave}>Save</Text>
+                </Pressable>
+              </View>
+            </Pressable>
           </Pressable>
-        </Pressable>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );

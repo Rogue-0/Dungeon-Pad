@@ -1,12 +1,13 @@
-import { Stack } from 'expo-router';
 import React from 'react';
+
+import { JsStack, PAIRED_SLIDE_PRESET } from '@/components/navigation/JsStack';
 
 export default function CampaignLayout() {
   return (
-    <Stack
+    <JsStack
       screenOptions={{
         headerShown: false,
-        contentStyle: { backgroundColor: 'transparent' },
+        ...PAIRED_SLIDE_PRESET,
       }}
     />
   );

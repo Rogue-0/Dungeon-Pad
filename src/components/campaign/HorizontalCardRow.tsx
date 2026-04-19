@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, ScrollView, StyleSheet, type ViewStyle } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 
+import { FadeMask } from '@/components/ui';
 import { typography, spacing } from '@/theme/tokens';
 import { useColors } from '@/theme/use-theme';
 
@@ -33,19 +33,9 @@ export default function HorizontalCardRow({
           color: colors.text.primary,
           marginBottom: spacing.md,
         },
-        scrollWrap: {
-          position: 'relative',
-        },
         scrollContent: {
           gap: spacing.md,
           paddingRight: spacing.lg,
-        },
-        fade: {
-          position: 'absolute',
-          right: 0,
-          top: 0,
-          bottom: 0,
-          width: 48,
         },
         emptyHint: {
           width: 240,
@@ -63,15 +53,10 @@ export default function HorizontalCardRow({
     [colors],
   );
 
-  const fadeColors = useMemo(
-    () => [`${colors.background}00`, colors.background] as [string, string],
-    [colors],
-  );
-
   return (
     <View style={[styles.container, style]}>
       <Text style={styles.title}>{title}</Text>
-      <View style={styles.scrollWrap}>
+      <FadeMask>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -84,14 +69,7 @@ export default function HorizontalCardRow({
           ) : null}
           {children}
         </ScrollView>
-        <LinearGradient
-          colors={fadeColors}
-          start={{ x: 0, y: 0.5 }}
-          end={{ x: 1, y: 0.5 }}
-          style={styles.fade}
-          pointerEvents="none"
-        />
-      </View>
+      </FadeMask>
     </View>
   );
 }

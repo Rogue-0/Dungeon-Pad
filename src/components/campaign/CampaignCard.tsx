@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Platform, Dimensions, Modal } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Platform, Dimensions, Modal, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
@@ -15,9 +15,14 @@ import type { CampaignWithStats } from '@/types';
 interface CampaignCardProps {
   campaign: CampaignWithStats;
   onDelete?: (campaignId: string) => void;
+  onImageChange?: (campaignId: string, uri: string) => void;
 }
 
-export default function CampaignCard({ campaign, onDelete }: CampaignCardProps) {
+export default function CampaignCard({
+  campaign,
+  onDelete,
+  onImageChange,
+}: CampaignCardProps) {
   const router = useRouter();
   const colors = useColors();
   const [imageUri, setImageUri] = useState<string | null>(campaign.imageUri);
@@ -26,15 +31,27 @@ export default function CampaignCard({ campaign, onDelete }: CampaignCardProps) 
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
 
   const pickImage = async () => {
-    setShowContextMenu(false);
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      setShowContextMenu(false);
+      const msg = 'Photo library access is needed to choose an image. Enable it in Settings.';
+      if (Platform.OS === 'web') window.alert(msg);
+      else Alert.alert('Permission needed', msg);
+      return;
+    }
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
       quality: 0.8,
     });
 
+    setShowContextMenu(false);
+
     if (!result.canceled && result.assets[0]) {
-      setImageUri(result.assets[0].uri);
+      const uri = result.assets[0].uri;
+      setImageUri(uri);
+      onImageChange?.(campaign.id, uri);
     }
   };
 

@@ -3,6 +3,7 @@ import {
   Platform,
   Pressable,
   StyleSheet,
+  View,
   type ViewStyle,
 } from 'react-native';
 
@@ -39,14 +40,13 @@ export default function Card({
   const [pressed, setPressed] = useState(false);
   const [hovered, setHovered] = useState(false);
 
-  const borderColor = hovered && !pressed ? colors.muted : colors.foreground;
+  const borderColor = pressed
+    ? colors.primary.pressed
+    : hovered
+      ? colors.muted
+      : colors.foreground;
 
   const shadowStyle = !pressed && !hovered ? shadows.card : {};
-
-  const innerShadowBorder =
-    pressed
-      ? { borderBottomWidth: 0, borderTopWidth: 4, borderTopColor: 'rgba(0,0,0,0.5)' }
-      : {};
 
   const styles = useMemo(
     () =>
@@ -57,6 +57,14 @@ export default function Card({
           backgroundColor: colors.surface,
           padding: spacing.md,
           overflow: 'hidden',
+        } as ViewStyle,
+        pressShadow: {
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 4,
+          backgroundColor: 'rgba(0,0,0,0.5)',
         } as ViewStyle,
       }),
     [colors],
@@ -75,10 +83,10 @@ export default function Card({
         webTransition,
         { width, height, borderColor },
         shadowStyle,
-        innerShadowBorder,
         style,
       ]}
     >
+      {pressed ? <View pointerEvents="none" style={styles.pressShadow} /> : null}
       {children}
     </Pressable>
   );

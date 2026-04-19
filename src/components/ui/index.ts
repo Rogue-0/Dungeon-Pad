@@ -6,3 +6,4 @@ export { default as Badge } from './Badge';
 export { default as Avatar } from './Avatar';
 export { default as Divider } from './Divider';
 export { default as PaginationDots } from './PaginationDots';
+export { default as FadeMask } from './FadeMask';

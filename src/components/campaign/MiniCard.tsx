@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Text, View, StyleSheet, Pressable, Platform, Dimensions, Modal } from 'react-native';
+import { Text, View, StyleSheet, Pressable, Platform, Dimensions, Modal, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
@@ -22,6 +22,7 @@ interface MiniCardProps {
   gradientIndex?: number;
   placeholderType?: PlaceholderType;
   sessionNumber?: number | null;
+  size?: 'default' | 'small';
 }
 
 /** Card used in horizontal scroll rows on the Campaign Overview */
@@ -36,7 +37,10 @@ export default function MiniCard({
   gradientIndex = 0,
   placeholderType = 'default',
   sessionNumber,
+  size = 'default',
 }: MiniCardProps) {
+  const cardWidth = size === 'small' ? 160 : 240;
+  const cardHeight = size === 'small' ? 187 : 280;
   const colors = useColors();
   const [imageUri, setImageUri] = useState<string | null>(initialImageUri ?? null);
   const [showContextMenu, setShowContextMenu] = useState(false);
@@ -45,12 +49,22 @@ export default function MiniCard({
   const palette = paletteByIndex(gradientIndex);
 
   const pickImage = async () => {
-    setShowContextMenu(false);
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      setShowContextMenu(false);
+      const msg = 'Photo library access is needed to choose an image. Enable it in Settings.';
+      if (Platform.OS === 'web') window.alert(msg);
+      else Alert.alert('Permission needed', msg);
+      return;
+    }
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
       quality: 0.8,
     });
+
+    setShowContextMenu(false);
 
     if (!result.canceled && result.assets[0]) {
       setImageUri(result.assets[0].uri);
@@ -257,8 +271,8 @@ export default function MiniCard({
   if (isAddCard) {
     return (
       <Card
-        width={240}
-        height={280}
+        width={cardWidth}
+        height={cardHeight}
         onPress={onPress}
         style={styles.addCard}
       >
@@ -271,8 +285,8 @@ export default function MiniCard({
   return (
     <>
       <Card
-        width={240}
-        height={280}
+        width={cardWidth}
+        height={cardHeight}
         onPress={onPress}
         onLongPress={(e) =>
           openContextMenu(e?.nativeEvent?.pageX ?? 0, e?.nativeEvent?.pageY ?? 0)

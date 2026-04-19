@@ -1,18 +1,17 @@
-import { Stack } from 'expo-router';
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 
 import AppBackground from '@/components/ui/AppBackground';
+import { JsStack, PAIRED_SLIDE_PRESET } from '@/components/navigation/JsStack';
 
-/** Main app stack — all authenticated screens live here */
 export default function MainLayout() {
   return (
     <View style={styles.root}>
       <AppBackground />
-      <Stack
+      <JsStack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: 'transparent' },
+          ...PAIRED_SLIDE_PRESET,
         }}
       />
     </View>

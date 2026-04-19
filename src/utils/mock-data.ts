@@ -16,6 +16,7 @@ export const MOCK_CAMPAIGNS: CampaignWithStats[] = [
   {
     id: 'campaign-1',
     name: 'Curse of Strahd',
+    description: null,
     imageUri: null,
     createdAt: '2025-09-01T00:00:00Z',
     updatedAt: '2026-03-28T00:00:00Z',
@@ -28,6 +29,7 @@ export const MOCK_CAMPAIGNS: CampaignWithStats[] = [
   {
     id: 'campaign-2',
     name: 'Icewind Dale',
+    description: null,
     imageUri: null,
     createdAt: '2025-06-15T00:00:00Z',
     updatedAt: '2026-03-20T00:00:00Z',
@@ -213,9 +215,9 @@ export const MOCK_COMBAT_MONSTERS: CombatMonster[] = [
 // ─── Maps (Curse of Strahd) ─────────────────────────────────────────────────
 
 export const MOCK_MAPS: GameMap[] = [
-  { id: 'map-1', campaignId: 'campaign-1', name: 'Barovia', imageUri: null, createdAt: '2025-09-01T00:00:00Z', updatedAt: '2025-09-01T00:00:00Z' },
-  { id: 'map-2', campaignId: 'campaign-1', name: 'Vallaki', imageUri: null, createdAt: '2025-09-01T00:00:00Z', updatedAt: '2025-09-01T00:00:00Z' },
-  { id: 'map-3', campaignId: 'campaign-1', name: 'Kresk', imageUri: null, createdAt: '2025-09-01T00:00:00Z', updatedAt: '2025-09-01T00:00:00Z' },
+  { id: 'map-1', campaignId: 'campaign-1', name: 'Barovia', description: null, imageUri: null, createdAt: '2025-09-01T00:00:00Z', updatedAt: '2025-09-01T00:00:00Z' },
+  { id: 'map-2', campaignId: 'campaign-1', name: 'Vallaki', description: null, imageUri: null, createdAt: '2025-09-01T00:00:00Z', updatedAt: '2025-09-01T00:00:00Z' },
+  { id: 'map-3', campaignId: 'campaign-1', name: 'Kresk', description: null, imageUri: null, createdAt: '2025-09-01T00:00:00Z', updatedAt: '2025-09-01T00:00:00Z' },
 ];
 
 // ─── Compendium Items ───────────────────────────────────────────────────────

@@ -3,7 +3,7 @@ import React, { useMemo, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 
 import BackButton from '@/components/navigation/BackButton';
-import { Avatar, Badge, Button, PaginationDots } from '@/components/ui';
+import { Avatar, Badge, Button, FadeMask, PaginationDots } from '@/components/ui';
 import { typography, spacing, radii, componentSizes } from '@/theme/tokens';
 import { useColors } from '@/theme/use-theme';
 import {
@@ -73,9 +73,11 @@ export default function CombatModuleScreen() {
           alignItems: 'center',
           gap: spacing.md,
         },
+        avatarScrollWrap: {
+          flex: 1,
+        },
         avatarScroll: {
           gap: spacing.sm,
-          flex: 1,
         },
         initiativeAvatar: {
           opacity: 0.5,
@@ -163,23 +165,25 @@ export default function CombatModuleScreen() {
       <View style={styles.initiativeCard}>
         <Text style={styles.sectionLabel}>Initiative Order</Text>
         <View style={styles.initiativeRow}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.avatarScroll}
-          >
-            {initiativeOrder.map((entry, i) => (
-              <Avatar
-                key={entry.id}
-                name={entry.name}
-                size={44}
-                style={[
-                  styles.initiativeAvatar,
-                  i === activeInitiative && styles.activeAvatar,
-                ]}
-              />
-            ))}
-          </ScrollView>
+          <FadeMask style={styles.avatarScrollWrap}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.avatarScroll}
+            >
+              {initiativeOrder.map((entry, i) => (
+                <Avatar
+                  key={entry.id}
+                  name={entry.name}
+                  size={44}
+                  style={[
+                    styles.initiativeAvatar,
+                    i === activeInitiative && styles.activeAvatar,
+                  ]}
+                />
+              ))}
+            </ScrollView>
+          </FadeMask>
           <View style={styles.initiativeButtons}>
             <Button label="Back" variant="tertiary" onPress={handleBack} />
             <Button label="Next" variant="primary" onPress={handleNext} />

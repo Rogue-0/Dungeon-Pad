@@ -1,11 +1,18 @@
-import React, { useMemo } from 'react';
-import { ScrollView, View, Text, Pressable, StyleSheet } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image } from 'expo-image';
 
 import BackButton from '@/components/navigation/BackButton';
-import { typography, spacing, radii, componentSizes } from '@/theme/tokens';
-import { useColors } from '@/theme/use-theme';
-import { useThemePreference } from '@/theme/use-theme';
+import { Button } from '@/components/ui';
+import { resetDatabase } from '@/db/database';
+import { useBackgroundPicker } from '@/hooks/useBackgroundPicker';
+import { useBackgroundStore } from '@/theme/background-store';
+import { componentSizes, radii, spacing, typography } from '@/theme/tokens';
+import { useColors, useThemeMode, useThemePreference } from '@/theme/use-theme';
 import type { ThemePreference } from '@/theme/theme-store';
+
+const DAY_SCENE = require('../../../../assets/images/campaigns-day.webp');
+const NIGHT_SCENE = require('../../../../assets/images/campaigns-night.webp');
 
 const THEME_OPTIONS: { value: ThemePreference; label: string; description: string }[] = [
   { value: 'system', label: 'System', description: 'Follow your device setting' },
@@ -15,7 +22,39 @@ const THEME_OPTIONS: { value: ThemePreference; label: string; description: strin
 
 export default function SettingsScreen() {
   const colors = useColors();
+  const mode = useThemeMode();
   const [preference, setPreference] = useThemePreference();
+  const customUri = useBackgroundStore((s) => s.customUri);
+  const setCustom = useBackgroundStore((s) => s.setCustom);
+
+  const pickBackground = useBackgroundPicker(setCustom);
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [resetState, setResetState] = useState<'idle' | 'working' | 'done' | 'error'>(
+    'idle',
+  );
+  const [resetError, setResetError] = useState<string | null>(null);
+
+  const handleReset = async () => {
+    setResetState('working');
+    setResetError(null);
+    try {
+      await resetDatabase();
+      setResetState('done');
+    } catch (err) {
+      setResetState('error');
+      setResetError(err instanceof Error ? err.message : String(err));
+    }
+  };
+
+  const closeConfirm = () => {
+    if (resetState === 'working') return;
+    setConfirmOpen(false);
+    setResetState('idle');
+    setResetError(null);
+  };
+
+  const previewSource = customUri ? { uri: customUri } : mode === 'dark' ? NIGHT_SCENE : DAY_SCENE;
 
   const styles = useMemo(
     () =>
@@ -91,6 +130,91 @@ export default function SettingsScreen() {
           color: colors.text.tertiary,
           marginTop: 2,
         },
+        backgroundCard: {
+          borderRadius: radii.card,
+          borderWidth: componentSizes.strokeWidth,
+          borderColor: colors.border,
+          backgroundColor: colors.surface,
+          padding: spacing.md,
+          gap: spacing.md,
+          marginBottom: spacing['2xl'],
+        },
+        preview: {
+          width: '100%',
+          aspectRatio: 16 / 9,
+          borderRadius: radii.input,
+          overflow: 'hidden',
+          backgroundColor: colors.surfaceSecondary,
+        },
+        previewImage: {
+          width: '100%',
+          height: '100%',
+        },
+        backgroundStatus: {
+          ...typography.bodyMedium,
+          color: colors.text.tertiary,
+        },
+        actionsRow: {
+          flexDirection: 'row',
+          gap: spacing.sm,
+          flexWrap: 'wrap',
+        },
+        dangerCard: {
+          borderRadius: radii.card,
+          borderWidth: componentSizes.strokeWidth,
+          borderColor: colors.destructive.default,
+          backgroundColor: colors.surface,
+          padding: spacing.md,
+          gap: spacing.sm,
+          marginBottom: spacing['2xl'],
+        },
+        dangerTitle: {
+          ...typography.subtitleSmall,
+          color: colors.destructive.default,
+        },
+        dangerDescription: {
+          ...typography.bodyMedium,
+          color: colors.text.tertiary,
+        },
+        modalOverlay: {
+          flex: 1,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: spacing.lg,
+        },
+        modalDialog: {
+          width: '100%',
+          maxWidth: 480,
+          borderRadius: radii.card,
+          borderWidth: componentSizes.strokeWidth,
+          borderColor: colors.border,
+          backgroundColor: colors.surface,
+          padding: spacing.lg,
+          gap: spacing.md,
+        },
+        modalTitle: {
+          ...typography.subtitleLarge,
+          color: colors.text.primary,
+        },
+        modalBody: {
+          ...typography.bodyMedium,
+          color: colors.text.secondary,
+        },
+        modalStatusError: {
+          ...typography.bodyMedium,
+          color: colors.destructive.default,
+        },
+        modalStatusOk: {
+          ...typography.bodyMedium,
+          color: colors.primary.default,
+        },
+        modalActions: {
+          flexDirection: 'row',
+          gap: spacing.sm,
+          flexWrap: 'wrap',
+          justifyContent: 'flex-end',
+        },
       }),
     [colors],
   );
@@ -125,6 +249,95 @@ export default function SettingsScreen() {
           );
         })}
       </View>
+
+      <Text style={styles.sectionLabel}>Background</Text>
+      <View style={styles.backgroundCard}>
+        <View style={styles.preview}>
+          <Image source={previewSource} style={styles.previewImage} contentFit="cover" />
+        </View>
+        <Text style={styles.backgroundStatus}>
+          {customUri
+            ? 'Using your custom background.'
+            : 'Using the default day/night scene.'}
+        </Text>
+        <View style={styles.actionsRow}>
+          <Button
+            variant="secondary"
+            label={customUri ? 'Change Background' : 'Choose Background'}
+            onPress={pickBackground}
+          />
+          {customUri ? (
+            <Button
+              variant="tertiary"
+              label="Reset to Default"
+              onPress={() => setCustom(null)}
+            />
+          ) : null}
+        </View>
+      </View>
+
+      <Text style={styles.sectionLabel}>Developer</Text>
+      <View style={styles.dangerCard}>
+        <Text style={styles.dangerTitle}>Reset Database</Text>
+        <Text style={styles.dangerDescription}>
+          Deletes all campaigns, sessions, heroes, NPCs, and notes, then reseeds with the
+          default sample content. Useful for testing migrations and seed data.
+        </Text>
+        <View style={styles.actionsRow}>
+          <Button
+            variant="destructive"
+            label="Reset Database"
+            onPress={() => setConfirmOpen(true)}
+          />
+        </View>
+      </View>
+
+      <Modal
+        visible={confirmOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={closeConfirm}
+      >
+        <Pressable style={styles.modalOverlay} onPress={closeConfirm}>
+          <Pressable style={styles.modalDialog} onPress={(e) => e.stopPropagation()}>
+            <Text style={styles.modalTitle}>Reset database?</Text>
+            <Text style={styles.modalBody}>
+              This wipes everything in the local database and restores the default sample
+              data (Curse of Strahd + Icewind Dale). This cannot be undone.
+            </Text>
+            {resetState === 'done' ? (
+              <Text style={styles.modalStatusOk}>
+                Done. {Platform.OS === 'web'
+                  ? 'Reload the page to see the seeded data.'
+                  : 'Fully quit and reopen the app (or reload in Expo Go) to pick up the fresh data.'}
+              </Text>
+            ) : null}
+            {resetState === 'error' ? (
+              <Text style={styles.modalStatusError}>Reset failed: {resetError}</Text>
+            ) : null}
+            <View style={styles.modalActions}>
+              {resetState === 'done' ? (
+                <Button variant="secondary" label="Close" onPress={closeConfirm} />
+              ) : (
+                <>
+                  <Button
+                    variant="tertiary"
+                    label="Cancel"
+                    onPress={closeConfirm}
+                    disabled={resetState === 'working'}
+                  />
+                  <Button
+                    variant="destructive"
+                    label={resetState === 'working' ? 'Resetting…' : 'Reset'}
+                    onPress={handleReset}
+                    disabled={resetState === 'working'}
+                  />
+                </>
+              )}
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </ScrollView>
   );
 }

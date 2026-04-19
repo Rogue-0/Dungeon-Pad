@@ -1,6 +1,6 @@
-import { v4 as uuidv4 } from 'uuid';
+import * as Crypto from 'expo-crypto';
 
 /** Generate a new UUID for database records */
 export function generateId(): string {
-  return uuidv4();
+  return Crypto.randomUUID();
 }
